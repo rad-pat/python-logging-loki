@@ -179,6 +179,17 @@ class LokiBatchEmitter(LokiEmitter):
             if not self.is_backup_buffer_empty():
                 self.empty_backup_buffer()
 
+    def _drain_queue(self):
+        try:
+            logs_to_export = {
+                "streams": [self.buffer.pop() for _ in range(BATCH_EXPORT_MIN_SIZE)]
+            }
+            self.session.post(self.url, json=logs_to_export)
+
+        except IndexError:
+
+            return
+
     def build_payload(self, record: logging.LogRecord, line) -> dict:
         """Build JSON payload with a log entry."""
         labels = self.build_tags(record)
