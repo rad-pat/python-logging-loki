@@ -8,7 +8,6 @@ import logging
 import time
 from logging.config import ConvertingDict
 from typing import Any, Dict, Optional, Tuple
-
 import requests
 
 from logging_loki import const
@@ -16,10 +15,19 @@ from logging_loki.config import BATCH_EXPORT_MIN_SIZE
 
 BasicAuth = Optional[Tuple[str, str]]
 
+logging.basicConfig(
+    format="time=%(asctime)s level=%(levelname)s caller=%(module)s:%(funcName)s:%(lineno)d msg=%(message)s",
+    level=logging.INFO,
+    datefmt="%Y-%m-%d %H:%M:%s",
+)
+
+logger = logging
+
 
 class LokiEmitter(abc.ABC):
     """Base Loki emitter class."""
 
+    backup_buffer = collections.deque([])
     success_response_code = const.success_response_code
     level_tag = const.level_tag
     logger_tag = const.logger_tag
@@ -104,6 +112,37 @@ class LokiEmitter(abc.ABC):
 
         return tags
 
+    def add_to_backup_buffer(self, record: logging.LogRecord) -> None:
+        """Add record that couldn't be exported tp Loki to the backup buffer"""
+        logger.info("Adding elements to the back buffer queue")
+        self.backup_buffer.appendleft(record)
+
+    def is_backup_buffer_empty(self) -> bool:
+        return not bool(self.backup_buffer)
+
+    def empty_backup_buffer(self) -> None:
+        """Export the backup buffer records to Loki if the service is already available"""
+        idx = 1
+        while True:
+            try:
+                logger.info(f"Draining backup buffer queue ({idx})")
+                record = self.backup_buffer.pop()
+                idx += 1
+            except IndexError:
+                logger.info("Backup queue is empty")
+                return
+            res = self.session.post(
+                self.url,
+                json=record,
+            )
+            if res.status_code != const.success_response_code:
+                logger.error(
+                    f"Loki service is still not available. Status Code {res.status_code}"
+                )
+                logger.info("Inserting record again into the queue")
+                self.add_to_backup_buffer(record)
+                return
+
 
 class LokiSimpleEmitter(LokiEmitter):
     def build_payload(self, record: logging.LogRecord, line) -> dict:
@@ -127,18 +166,29 @@ class LokiBatchEmitter(LokiEmitter):
         if len(self.buffer) < BATCH_EXPORT_MIN_SIZE:
             self.buffer.appendleft(payload["streams"][0])
         else:
-            resp = self.session.post(
-                self.url,
-                json={
-                    "streams": [self.buffer.pop() for _ in range(BATCH_EXPORT_MIN_SIZE)]
-                },
-            )
+            logger.info("Exporting logs to loki")
+            logs_to_export = {
+                "streams": [self.buffer.pop() for _ in range(BATCH_EXPORT_MIN_SIZE)]
+            }
+            resp = self.session.post(self.url, json=logs_to_export)
+
             if resp.status_code != self.success_response_code:
-                raise ValueError(
-                    "Unexpected Loki API response status code: {0}".format(
-                        resp.status_code
-                    )
-                )
+                logger.error("Failed to export logs to Loki")
+                self.add_to_backup_buffer(logs_to_export)
+
+            if not self.is_backup_buffer_empty():
+                self.empty_backup_buffer()
+
+    def _drain_queue(self):
+        try:
+            logs_to_export = {
+                "streams": [self.buffer.pop() for _ in range(BATCH_EXPORT_MIN_SIZE)]
+            }
+            self.session.post(self.url, json=logs_to_export)
+
+        except IndexError:
+
+            return
 
     def build_payload(self, record: logging.LogRecord, line) -> dict:
         """Build JSON payload with a log entry."""
