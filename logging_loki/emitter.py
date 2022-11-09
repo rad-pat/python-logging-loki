@@ -8,7 +8,6 @@ import logging
 import time
 from logging.config import ConvertingDict
 from typing import Any, Dict, Optional, Tuple
-
 import requests
 
 from logging_loki import const
@@ -20,6 +19,7 @@ BasicAuth = Optional[Tuple[str, str]]
 class LokiEmitter(abc.ABC):
     """Base Loki emitter class."""
 
+    backup_buffer = collections.deque([])
     success_response_code = const.success_response_code
     level_tag = const.level_tag
     logger_tag = const.logger_tag
@@ -104,6 +104,32 @@ class LokiEmitter(abc.ABC):
 
         return tags
 
+    def add_to_backup_buffer(self, record: logging.LogRecord):
+        print("Adding elements to the back buffer queue")
+        return self.backup_buffer.appendleft(record)
+
+    def is_backup_buffer_empty(self) -> bool:
+        return not bool(self.backup_buffer)
+
+    def empty_backup_buffer(self):
+        idx = 0
+        while True:
+            try:
+                print(f"looking for logs {idx}")
+                record = self.backup_buffer.pop()
+                idx += 1
+            except IndexError:
+                print("Backup queue is empty")
+                return
+            res = self.session.post(
+                self.url,
+                json=record,
+            )
+            if res.status_code != const.success_response_code:
+                print("Retrying: Adding aggain to the queue")
+                return self.add_to_backup_buffer(record)
+            print("Finished")
+
 
 class LokiSimpleEmitter(LokiEmitter):
     def build_payload(self, record: logging.LogRecord, line) -> dict:
@@ -127,18 +153,16 @@ class LokiBatchEmitter(LokiEmitter):
         if len(self.buffer) < BATCH_EXPORT_MIN_SIZE:
             self.buffer.appendleft(payload["streams"][0])
         else:
-            resp = self.session.post(
-                self.url,
-                json={
-                    "streams": [self.buffer.pop() for _ in range(BATCH_EXPORT_MIN_SIZE)]
-                },
-            )
+            print("exporting logs to loki")
+            logs_to_export = {
+                "streams": [self.buffer.pop() for _ in range(BATCH_EXPORT_MIN_SIZE)]
+            }
+            resp = self.session.post(self.url, json=logs_to_export)
             if resp.status_code != self.success_response_code:
-                raise ValueError(
-                    "Unexpected Loki API response status code: {0}".format(
-                        resp.status_code
-                    )
-                )
+                self.add_to_backup_buffer(logs_to_export)
+
+            if not self.is_backup_buffer_empty():
+                self.empty_backup_buffer()
 
     def build_payload(self, record: logging.LogRecord, line) -> dict:
         """Build JSON payload with a log entry."""
