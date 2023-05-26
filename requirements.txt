@@ -1,18 +1,1 @@
-attrs @ file:///home/somnium/.cache/pypoetry/artifacts/c4/ee/75/fcd6c2f4c5a1d60b1bcd97014702ca01b3f032fd927d88780b38708409/attrs-21.4.0-py2.py3-none-any.whl
-certifi @ file:///home/somnium/.cache/pypoetry/artifacts/89/06/5b/e4bfdf1b8370bdc0a26198e81afa98f68c01a8b1b515c9108c6ad98d8a/certifi-2021.10.8-py2.py3-none-any.whl
-charset-normalizer @ file:///home/somnium/.cache/pypoetry/artifacts/d5/27/31/db4fb74906e3a7f55f720e0079ac1850dd86e30651cdfa5e1f04c53cfa/charset_normalizer-2.0.12-py3-none-any.whl
-freezegun @ file:///home/somnium/.cache/pypoetry/artifacts/30/b3/7c/d645385b8f61ff55251816d0a779ef68bcef60ba288e9d36ea65dc09b5/freezegun-1.2.1-py3-none-any.whl
-idna @ file:///home/somnium/.cache/pypoetry/artifacts/90/36/8c/81eabf6ac88608721ab27f439c9a6b9a8e6a21cc58c59ebb1a42720199/idna-3.3-py3-none-any.whl
-iniconfig @ file:///home/somnium/.cache/pypoetry/artifacts/1d/67/0c/79706e7a41ef01be0b1a38aa3b4ddc9bd800a95ccd8d8dc7de4e090623/iniconfig-1.1.1-py2.py3-none-any.whl
-packaging @ file:///home/somnium/.cache/pypoetry/artifacts/d3/1f/90/3f2473250ebd055fe7f0856810677783949fc0d2e5f25bbb4dc00ad0a9/packaging-21.3-py3-none-any.whl
-pluggy @ file:///home/somnium/.cache/pypoetry/artifacts/49/3e/55/309ec3705ba3309d817d531002c0a02f643d06c5d5a889ce43236130d5/pluggy-1.0.0-py2.py3-none-any.whl
-py @ file:///home/somnium/.cache/pypoetry/artifacts/71/fb/64/bfdc833c2055a893883f33deaac35ef2cbdd95d58031cfc69a630f32bf/py-1.11.0-py2.py3-none-any.whl
-pyparsing @ file:///home/somnium/.cache/pypoetry/artifacts/21/a6/3b/55ae9f701123d450744bdc09d9625793fa2ab7fb17bd557ec799ef097d/pyparsing-3.0.8-py3-none-any.whl
-pytest @ file:///home/somnium/.cache/pypoetry/artifacts/81/e7/80/83cc65ea38ab41a59121aea7e519147cea204e1eaf989149cc12b3b342/pytest-7.1.2-py3-none-any.whl
-python-dateutil @ file:///home/somnium/.cache/pypoetry/artifacts/39/9b/3b/576da7c854551d780528d75132c98882925e44de0aecf8a31a4bea379c/python_dateutil-2.8.2-py2.py3-none-any.whl
--e git+https://github.com/photopills/python-logging-loki@f8ff449ec35fab1b6643429f89fbcc84c6fdb3f9#egg=python_logging_loki
-requests @ file:///home/somnium/.cache/pypoetry/artifacts/d2/b2/c6/a04ce59140c6739203837d8dd0f518e29051b7ab61d2f34d4fd4241d30/requests-2.27.1-py2.py3-none-any.whl
-rfc3339 @ file:///home/somnium/.cache/pypoetry/artifacts/ca/10/50/9457bd94ffd777ffb1fc98995444ef7f23c3bec6d09c95f9c1a4813368/rfc3339-6.2-py3-none-any.whl
-six @ file:///home/somnium/.cache/pypoetry/artifacts/89/b2/f8/fd92b6d5daa0f8889429b2fc67ec21eedc5cae5d531ee2853828ced6c7/six-1.16.0-py2.py3-none-any.whl
-tomli @ file:///home/somnium/.cache/pypoetry/artifacts/62/12/b6/6db9ebb9c8e1a6c5aa8a92ae73098d8119816b5e8507490916621bc305/tomli-2.0.1-py3-none-any.whl
-urllib3 @ file:///home/somnium/.cache/pypoetry/artifacts/88/1c/d5/a55ed0245e5d7cd3a9f40dd75733644cbf7b7d94a6c521eb6c027a326c/urllib3-1.26.9-py2.py3-none-any.whl
+requests

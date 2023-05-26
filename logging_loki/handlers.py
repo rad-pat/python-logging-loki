@@ -35,8 +35,8 @@ class LokiHandler(logging.Handler):
         self,
         url: str,
         tags: Optional[dict] = None,
-        auth: Optional[emitter.BasicAuth] = None,
-        emitter: emitter.LokiEmitter = emitter.LokiSimpleEmitter,
+        auth: emitter.BasicAuth = None,
+        emitter_class: Type[emitter.LokiEmitter] = emitter.LokiSimpleEmitter,
     ):
         """
         Create new Loki logging handler.
@@ -45,11 +45,11 @@ class LokiHandler(logging.Handler):
             url: Endpoint used to send log entries to Loki (e.g. `https://my-loki-instance/loki/api/v1/push`).
             tags: Default tags added to every log record.
             auth: Optional tuple with username and password for basic HTTP authentication.
-            version: Version of Loki emitter to use.
+            emitter_class: Class to use for emitter
 
         """
         super().__init__()
-        self.emitter = emitter(url, tags, auth)
+        self.emitter = emitter_class(url, tags, auth)
 
     def handleError(self, record):  # noqa: N802
         """Close emitter and let default handler take actions on error."""

@@ -9,11 +9,18 @@ import time
 from logging.config import ConvertingDict
 from typing import Any, Dict, Optional, Tuple
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 from logging_loki import const
 from logging_loki.config import BATCH_EXPORT_MIN_SIZE
 
 BasicAuth = Optional[Tuple[str, str]]
+
+MAX_REQUEST_RETRIES = 3
+RETRY_BACKOFF_FACTOR = 1
+RETRY_ON_STATUS = [408, 429, 500, 502, 503, 504]
+
 
 logging.basicConfig(
     format="time=%(asctime)s level=%(levelname)s caller=%(module)s:%(funcName)s:%(lineno)d msg=%(message)s",
@@ -75,6 +82,13 @@ class LokiEmitter(abc.ABC):
         if self._session is None:
             self._session = self.session_class()
             self._session.auth = self.auth or None
+            retry = Retry(
+                total=MAX_REQUEST_RETRIES,
+                backoff_factor=RETRY_BACKOFF_FACTOR,
+                status_forcelist=RETRY_ON_STATUS,
+            )
+            self._session.mount(self.url, HTTPAdapter(max_retries=retry))
+
         return self._session
 
     def close(self):
@@ -95,7 +109,7 @@ class LokiEmitter(abc.ABC):
         return "".join(char for char in label if char in self.label_allowed_chars)
 
     def build_tags(self, record: logging.LogRecord) -> Dict[str, Any]:
-        """Return tags that must be send to Loki with a log record."""
+        """Return tags that must be sent to Loki with a log record."""
         tags = dict(self.tags) if isinstance(self.tags, ConvertingDict) else self.tags
         tags = copy.deepcopy(tags)
         tags[self.level_tag] = record.levelname.lower()
@@ -112,8 +126,8 @@ class LokiEmitter(abc.ABC):
 
         return tags
 
-    def add_to_backup_buffer(self, record: logging.LogRecord) -> None:
-        """Add record that couldn't be exported tp Loki to the backup buffer"""
+    def add_to_backup_buffer(self, record: dict) -> None:
+        """Add record to the backup buffer that couldn't be exported to Loki"""
         logger.info("Adding elements to the back buffer queue")
         self.backup_buffer.appendleft(record)
 

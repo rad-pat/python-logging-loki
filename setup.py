@@ -17,7 +17,7 @@ setuptools.setup(
     url="https://github.com/greyzmeem/python-logging-loki",
     packages=setuptools.find_packages(exclude=("tests",)),
     python_requires=">=3.6",
-    install_requires=["rfc3339>=6.1", "requests"],
+    install_requires=["requests"],
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
@@ -28,6 +28,9 @@ setuptools.setup(
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
         "Topic :: Software Development :: Libraries :: Python Modules",
         "Topic :: System :: Logging",
         "Topic :: Internet :: WWW/HTTP",
